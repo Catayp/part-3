@@ -48,9 +48,8 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const person = request.body
-  if (person.name !== '' || person.cel !== '') {
     const contact = new Contact({
       name: person.name,
       cel: person.cel
@@ -59,16 +58,18 @@ app.post('/api/persons', (request, response) => {
       .save()
       .then(result => {response.json(result)})
       .catch(error => next(error))
-  } else {
-    response.json({ error: 'you must have name or phone' })
-  }
+  
 })
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  } else{
+    return response.status(400).json({ error: 'error.message' })
+  }
   next(error)
 }
 

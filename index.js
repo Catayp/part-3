@@ -50,17 +50,18 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 app.post('/api/persons', (request, response) => {
   const person = request.body
-  if (body.content === undefined) {
-    return response.status(400).json({ error: 'content missing' })
+  if (person.name !== '' || person.cel !== '') {
+    const contact = new Contact({
+      name: person.name,
+      cel: person.cel
+    })
+    contact
+      .save()
+      .then(result => {response.json(result)})
+      .catch(error => next(error))
+  } else {
+    response.json({ error: 'you must have name or phone' })
   }
-  const contact = new Contact({
-    name: person.name,
-    cel: person.cel
-  })
-  contact
-    .save()
-    .then(result => response.json(result))
-    .catch(error => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {

@@ -10,73 +10,55 @@ app.use(express.static('build'))
 app.use(morgan('dev'))
 app.use(cors())
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
-
-app.get('/info', (request, response) => {
-	date = new Date()
-  response.send(
-  	`<p>Phonebook has info for ${persons.length} people<p/>
-  	<strong>${date}</strong>`
-  )
-})
-
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Contact
-  .find({})
-  .then(result => response.json(result))
-  .catch(error => next(error))
+    .find({})
+    .then(result => response.json(result))
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-	Contact
+  Contact
     .findById(request.params.id)
-    .then(person =>{
+    .then(person => {
       if (person) {
         response.json(person)
       } else {
         response.status(404).end()
       }
-    })
-    .catch(error => next(error)) 
+    }).catch(error => next(error) )
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Contact.findByIdAndRemove(request.params.id)
-    .then(result => response.status(204).end())
+    .then(() => response.status(204).end())
     .catch(error => next(error))
 })
-
 app.post('/api/persons', (request, response, next) => {
   const person = request.body
-    const contact = new Contact({
-      name: person.name,
-      cel: person.cel
-    })
-    contact
-      .save()
-      .then(result => {response.json(result)})
-      .catch(error => next(error))
-  
+  const contact = new Contact({
+    name: person.name,
+    cel: person.cel
+  })
+  contact
+    .save()
+    .then(result => {response.json(result)})
+    .catch(error => next(error))
 })
-
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
-  } else{
-    return response.status(400).json({ error: 'error.message' })
   }
   next(error)
 }
 
 app.use(errorHandler)
 
-const PORT = process.env.PORT 
+const PORT = process.env.PORT
 app.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
 
